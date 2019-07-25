@@ -1,9 +1,10 @@
 FROM ubuntu:16.04
 #FROM python:3.6
-MAINTAINER Francis Charette Migneault <francis.charette.migneault@gmail.com>
+LABEL maintainer="Francis Charette Migneault" email="francis.charette.migneault@gmail.com"
 
 ENV MINICONDA_VERSION=3-latest-Linux-x86_64
 ENV CMAKE_VERSION=3.5.1
+ENV CMAKE_THREADS=4
 ENV OPENCV_VERSION=3.4.1
 ENV BOOST_VERSION=1.66.0
 ENV BOOST_VERSION_DIR=boost_1_66_0
@@ -59,7 +60,7 @@ RUN cd /usr/local/src \
     && tar xvf cmake-${CMAKE_VERSION}.tar.gz \
     && cd cmake-${CMAKE_VERSION} \
     && ./bootstrap \
-    && make -j4 \
+    && make -j${CMAKE_THREADS} \
     && make install \
     && cd .. \
     && rm -rf cmake*
@@ -71,7 +72,7 @@ RUN tar zxf ${BOOST_VERSION_DIR}.tar.gz \
     && rm ${BOOST_VERSION_DIR}.tar.gz \
     && cd ${BOOST_VERSION_DIR} \
     && ./bootstrap.sh \
-    && ./b2 --prefix=/usr/local/ -j4 link=shared runtime-link=shared install \
+    && ./b2 --prefix=/usr/local/ -j${CMAKE_THREADS} link=shared runtime-link=shared install \
     && cd .. && rm -rf ${BOOST_VERSION_DIR} && ldconfig
 
 WORKDIR /
