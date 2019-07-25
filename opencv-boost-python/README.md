@@ -1,6 +1,6 @@
-# docker-opencv-boost-python
+# opencv-boost-python
 
-Docker image setup.
+Docker image setup for basic image processing with OpenCV in Python.
 
 ## Components: 
 - Ubuntu 16.04.1 (4.13.0-39-generic)
