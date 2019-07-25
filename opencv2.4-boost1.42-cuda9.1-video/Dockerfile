@@ -1,7 +1,10 @@
 FROM nvidia/cuda:9.1-devel-ubuntu16.04
+LABEL maintainer="Francis Charette Migneault" email="francis.charette.migneault@gmail.com"
 
-ENV opencvtag=2.4.13.7
-ENV nbthreads=4
+ENV CMAKE_VERSION=3.5.1
+ENV CMAKE_THREADS=4
+ENV OPENCV_VERSION=2.4.13.7
+ENV BOOST_VERSION=1.42
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -19,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     python \
     python-dev \
     python-numpy \
+    libboost${BOOST_VERSION}-dev \
     libtbb2 \
     libtool \
     libtbb-dev \
@@ -36,7 +40,7 @@ RUN wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.xz &
     tar xvf nasm-2.13.01.tar.xz && rm nasm-2.13.01.tar.xz && cd nasm-2.13.01 && \
     ./configure \
         --prefix=/usr && \
-    make -j${nbthreads} && make install && make distclean
+    make -j${CMAKE_THREADS} && make install && make distclean
 
 WORKDIR /
 RUN wget http://download.videolan.org/pub/x264/snapshots/x264-snapshot-20170614-2245-stable.tar.bz2 && \
@@ -44,7 +48,7 @@ RUN wget http://download.videolan.org/pub/x264/snapshots/x264-snapshot-20170614-
     ./configure \
         --enable-static \
         --enable-pic && \
-    make -j${nbthreads} && make install && make distclean
+    make -j${CMAKE_THREADS} && make install && make distclean
 
 WORKDIR /
 RUN wget http://ffmpeg.org/releases/ffmpeg-3.3.tar.bz2 && \
@@ -59,9 +63,9 @@ RUN wget http://ffmpeg.org/releases/ffmpeg-3.3.tar.bz2 && \
         --enable-pic \
         --enable-version3 \
         --enable-runtime-cpudetect && \
-    make -j${nbthreads} && make install && make distclean
+    make -j${CMAKE_THREADS} && make install && make distclean
 
-RUN git clone -b ${opencvtag} --progress --verbose --single-branch https://github.com/opencv/opencv.git /opencv
+RUN git clone -b ${OPENCV_VERSION} --progress --verbose --single-branch https://github.com/opencv/opencv.git /opencv
 WORKDIR /opencv/build
 RUN sed -i -e 's/libavformat\.a/libavformat.so/g' \
         -e 's/libavutil\.a/libavutil.so/g' \
@@ -119,9 +123,8 @@ RUN sed -i -e 's/libavformat\.a/libavformat.so/g' \
         -D WITH_FFMPEG=ON \
         -D WITH_CUDA=ON \
         .. && \
-    make -j${nbthreads} install && rm -r /opencv/build
+    make -j${CMAKE_THREADS} install && rm -r /opencv/build
 
 RUN ldconfig
 WORKDIR /
 CMD ["/bin/bash"]
-
