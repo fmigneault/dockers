@@ -11,7 +11,7 @@ ENV BOOST_VERSION_DIR=boost_1_66_0
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 RUN apt-get -qq update && apt-get install -q -y software-properties-common
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test && apt-get update 
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test && apt-get update
 #RUN apt-get install gcc-5 g++-5
 RUN apt-get install -y \
     build-essential \
@@ -37,9 +37,9 @@ RUN apt-get install -y \
     libavformat-dev \
     libpq-dev \
     libglib2.0-0 \
-    libxext6 \ 
-    libsm6 \ 
-    libxrender1 
+    libxext6 \
+    libsm6 \
+    libxrender1
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
 RUN gcc --version
 
@@ -54,9 +54,9 @@ RUN wget --quiet https://repo.continuum.io/miniconda/Miniconda${MINICONDA_VERSIO
 RUN pip install --upgrade pip
 RUN pip install numpy
 
-RUN cd /usr/local/src \ 
+RUN cd /usr/local/src \
     && wget https://cmake.org/files/v${CMAKE_VERSION%.*}/cmake-${CMAKE_VERSION}.tar.gz \
-    && tar xvf cmake-${CMAKE_VERSION}.tar.gz \ 
+    && tar xvf cmake-${CMAKE_VERSION}.tar.gz \
     && cd cmake-${CMAKE_VERSION} \
     && ./bootstrap \
     && make -j4 \
@@ -100,3 +100,6 @@ RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
     && rm /${OPENCV_VERSION}.zip \
     && rm -r /opencv-${OPENCV_VERSION}
 
+RUN ldconfig
+WORKDIR /
+CMD ["/bin/bash"]
