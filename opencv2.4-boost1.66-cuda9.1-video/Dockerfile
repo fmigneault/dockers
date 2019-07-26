@@ -2,10 +2,9 @@ FROM nvidia/cuda:9.1-devel-ubuntu16.04
 LABEL maintainer="Francis Charette Migneault" email="francis.charette.migneault@gmail.com"
 
 ENV CMAKE_VERSION=3.5.1
-ENV CMAKE_THREADS=4
+ENV BUILD_THREADS=4
 ENV OPENCV_VERSION=2.4.13.7
 ENV BOOST_VERSION=1.66.0
-ENV BOOST_VERSION_DIR=boost_1_66_0
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -36,12 +35,13 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /
-RUN wget --no-check-certificate --max-redirect 3 https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/${BOOST_VERSION_DIR}.tar.gz
-RUN tar zxf ${BOOST_VERSION_DIR}.tar.gz && \
+RUN export BOOST_VERSION_DIR=$(echo boost_${BOOST_VERSION} | sed -e 's/\./_/g') && \
+    wget --no-check-certificate --max-redirect 3 https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/${BOOST_VERSION_DIR}.tar.gz && \
+    tar zxf ${BOOST_VERSION_DIR}.tar.gz && \
     rm ${BOOST_VERSION_DIR}.tar.gz && \
     cd ${BOOST_VERSION_DIR} && \
     ./bootstrap.sh && \
-    ./b2 --prefix=/usr/local/ -j${CMAKE_THREADS} link=shared runtime-link=shared install && \
+    ./b2 --prefix=/usr/local/ -j${BUILD_THREADS} link=shared runtime-link=shared install && \
     cd .. && rm -rf ${BOOST_VERSION_DIR} && ldconfig
 
 WORKDIR /
@@ -49,7 +49,7 @@ RUN wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.xz &
     tar xvf nasm-2.13.01.tar.xz && rm nasm-2.13.01.tar.xz && cd nasm-2.13.01 && \
     ./configure \
         --prefix=/usr && \
-    make -j${CMAKE_THREADS} && make install && make distclean
+    make -j${BUILD_THREADS} && make install && make distclean
 
 WORKDIR /
 RUN wget http://download.videolan.org/pub/x264/snapshots/x264-snapshot-20170614-2245-stable.tar.bz2 && \
@@ -57,7 +57,7 @@ RUN wget http://download.videolan.org/pub/x264/snapshots/x264-snapshot-20170614-
     ./configure \
         --enable-static \
         --enable-pic && \
-    make -j${CMAKE_THREADS} && make install && make distclean
+    make -j${BUILD_THREADS} && make install && make distclean
 
 WORKDIR /
 RUN wget http://ffmpeg.org/releases/ffmpeg-3.3.tar.bz2 && \
@@ -72,7 +72,7 @@ RUN wget http://ffmpeg.org/releases/ffmpeg-3.3.tar.bz2 && \
         --enable-pic \
         --enable-version3 \
         --enable-runtime-cpudetect && \
-    make -j${CMAKE_THREADS} && make install && make distclean
+    make -j${BUILD_THREADS} && make install && make distclean
 
 RUN git clone -b ${OPENCV_VERSION} --progress --verbose --single-branch https://github.com/opencv/opencv.git /opencv
 WORKDIR /opencv/build
@@ -143,7 +143,7 @@ RUN sed -i -e 's/libavformat\.a/libavformat.so/g' \
         -D WITH_FFMPEG=ON \
         -D WITH_CUDA=ON \
         .. && \
-    make -j${CMAKE_THREADS} install && rm -r /opencv/build
+    make -j${BUILD_THREADS} install && rm -r /opencv/build
 
 RUN ldconfig
 WORKDIR /

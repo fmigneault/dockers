@@ -4,10 +4,9 @@ LABEL maintainer="Francis Charette Migneault" email="francis.charette.migneault@
 
 ENV MINICONDA_VERSION=3-latest-Linux-x86_64
 ENV CMAKE_VERSION=3.5.1
-ENV CMAKE_THREADS=4
+ENV BUILD_THREADS=4
 ENV OPENCV_VERSION=3.4.1
 ENV BOOST_VERSION=1.66.0
-ENV BOOST_VERSION_DIR=boost_1_66_0
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
@@ -59,19 +58,20 @@ RUN cd /usr/local/src && \
     tar xvf cmake-${CMAKE_VERSION}.tar.gz && \
     cd cmake-${CMAKE_VERSION} && \
     ./bootstrap && \
-    make -j${CMAKE_THREADS} && \
+    make -j${BUILD_THREADS} && \
     make install && \
     cd .. && \
     rm -rf cmake*
 RUN cmake --version
 
 WORKDIR /
-RUN wget --no-check-certificate --max-redirect 3 https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/${BOOST_VERSION_DIR}.tar.gz
-RUN tar zxf ${BOOST_VERSION_DIR}.tar.gz && \
+RUN export BOOST_VERSION_DIR=$(echo boost_${BOOST_VERSION} | sed -e 's/\./_/g') && \
+    wget --no-check-certificate --max-redirect 3 https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/${BOOST_VERSION_DIR}.tar.gz && \
+    tar zxf ${BOOST_VERSION_DIR}.tar.gz && \
     rm ${BOOST_VERSION_DIR}.tar.gz && \
     cd ${BOOST_VERSION_DIR} && \
     ./bootstrap.sh && \
-    cd ${BOOST_VERSION_DIR} && ./b2 --prefix=/usr/local/ -j${CMAKE_THREADS} link=shared runtime-link=shared install && \
+    ./b2 --prefix=/usr/local/ -j${BUILD_THREADS} link=shared runtime-link=shared install && \
     cd .. && rm -rf ${BOOST_VERSION_DIR} && ldconfig
 
 WORKDIR /
