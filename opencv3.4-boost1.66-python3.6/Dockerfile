@@ -27,7 +27,6 @@ RUN apt-get install -y \
     unzip \
     yasm \
     pkg-config \
-    libboost-dev \
     libswscale-dev \
     libtbb2 \
     libtbb-dev \
@@ -55,51 +54,52 @@ RUN wget --quiet https://repo.continuum.io/miniconda/Miniconda${MINICONDA_VERSIO
 RUN pip install --upgrade pip
 RUN pip install numpy
 
-RUN cd /usr/local/src \
-    && wget https://cmake.org/files/v${CMAKE_VERSION%.*}/cmake-${CMAKE_VERSION}.tar.gz \
-    && tar xvf cmake-${CMAKE_VERSION}.tar.gz \
-    && cd cmake-${CMAKE_VERSION} \
-    && ./bootstrap \
-    && make -j${CMAKE_THREADS} \
-    && make install \
-    && cd .. \
-    && rm -rf cmake*
+RUN cd /usr/local/src && \
+    wget https://cmake.org/files/v${CMAKE_VERSION%.*}/cmake-${CMAKE_VERSION}.tar.gz && \
+    tar xvf cmake-${CMAKE_VERSION}.tar.gz && \
+    cd cmake-${CMAKE_VERSION} && \
+    ./bootstrap && \
+    make -j${CMAKE_THREADS} && \
+    make install && \
+    cd .. && \
+    rm -rf cmake*
 RUN cmake --version
 
 WORKDIR /
 RUN wget --no-check-certificate --max-redirect 3 https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/${BOOST_VERSION_DIR}.tar.gz
-RUN tar zxf ${BOOST_VERSION_DIR}.tar.gz \
-    && rm ${BOOST_VERSION_DIR}.tar.gz \
-    && cd ${BOOST_VERSION_DIR} \
-    && ./bootstrap.sh \
-    && ./b2 --prefix=/usr/local/ -j${CMAKE_THREADS} link=shared runtime-link=shared install \
-    && cd .. && rm -rf ${BOOST_VERSION_DIR} && ldconfig
+RUN tar zxf ${BOOST_VERSION_DIR}.tar.gz && \
+    rm ${BOOST_VERSION_DIR}.tar.gz && \
+    cd ${BOOST_VERSION_DIR} && \
+    ./bootstrap.sh && \
+    cd ${BOOST_VERSION_DIR} && ./b2 --prefix=/usr/local/ -j${CMAKE_THREADS} link=shared runtime-link=shared install && \
+    cd .. && rm -rf ${BOOST_VERSION_DIR} && ldconfig
 
 WORKDIR /
-RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
-    && unzip ${OPENCV_VERSION}.zip \
-    && mkdir /opencv-${OPENCV_VERSION}/cmake_binary \
-    && cd /opencv-${OPENCV_VERSION}/cmake_binary \
-    && cmake -DBUILD_TIFF=ON \
-    -DBUILD_opencv_java=OFF \
-    -DWITH_CUDA=OFF \
-    -DENABLE_AVX=ON \
-    -DWITH_OPENGL=ON \
-    -DWITH_OPENCL=ON \
-    -DWITH_IPP=ON \
-    -DWITH_TBB=ON \
-    -DWITH_EIGEN=ON \
-    -DWITH_V4L=ON \
-    -DBUILD_TESTS=OFF \
-    -DBUILD_PERF_TESTS=OFF \
-    -DCMAKE_BUILD_TYPE=RELEASE \
-    -DCMAKE_INSTALL_PREFIX=$(python3.6 -c "import sys; print(sys.prefix)") \
-    -DPYTHON_EXECUTABLE=$(which python3.6) \
-    -DPYTHON_INCLUDE_DIR=$(python3.6 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
-    -DPYTHON_PACKAGES_PATH=$(python3.6 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") .. \
-    && make install \
-    && rm /${OPENCV_VERSION}.zip \
-    && rm -r /opencv-${OPENCV_VERSION}
+RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip && \
+    unzip ${OPENCV_VERSION}.zip && \
+    mkdir /opencv-${OPENCV_VERSION}/cmake_binary && \
+    cd /opencv-${OPENCV_VERSION}/cmake_binary && \
+    cmake -DBUILD_TIFF=ON \
+        -DBUILD_opencv_java=OFF \
+        -DWITH_CUDA=OFF \
+        -DENABLE_AVX=ON \
+        -DWITH_OPENGL=ON \
+        -DWITH_OPENCL=ON \
+        -DWITH_IPP=ON \
+        -DWITH_TBB=ON \
+        -DWITH_EIGEN=ON \
+        -DWITH_V4L=ON \
+        -DBUILD_TESTS=OFF \
+        -DBUILD_PERF_TESTS=OFF \
+        -DCMAKE_BUILD_TYPE=RELEASE \
+        -DCMAKE_INSTALL_PREFIX=$(python3.6 -c "import sys; print(sys.prefix)") \
+        -DPYTHON_EXECUTABLE=$(which python3.6) \
+        -DPYTHON_INCLUDE_DIR=$(python3.6 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
+        -DPYTHON_PACKAGES_PATH=$(python3.6 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
+        .. && \
+    make install && \
+    rm /${OPENCV_VERSION}.zip && \
+    rm -r /opencv-${OPENCV_VERSION}
 
 RUN ldconfig
 WORKDIR /

@@ -1,4 +1,4 @@
-# opencv2.4-boost1.42-cuda9.1-video
+# opencv2.4-boost1.66-cuda9.1-video
 
 Docker image setup for image and video processing with OpenCV and CUDA.
 
@@ -7,4 +7,4 @@ Docker image setup for image and video processing with OpenCV and CUDA.
 - nvidia CUDA Toolkit 9.1
 - OpenCV 2.4.13.7
 - FFmpeg 3.3
-- Boost 1.42
+- Boost 1.66

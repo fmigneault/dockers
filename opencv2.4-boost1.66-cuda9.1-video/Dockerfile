@@ -4,7 +4,8 @@ LABEL maintainer="Francis Charette Migneault" email="francis.charette.migneault@
 ENV CMAKE_VERSION=3.5.1
 ENV CMAKE_THREADS=4
 ENV OPENCV_VERSION=2.4.13.7
-ENV BOOST_VERSION=1.42
+ENV BOOST_VERSION=1.66.0
+ENV BOOST_VERSION_DIR=boost_1_66_0
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -22,7 +23,6 @@ RUN apt-get update && apt-get install -y \
     python \
     python-dev \
     python-numpy \
-    libboost${BOOST_VERSION}-dev \
     libtbb2 \
     libtool \
     libtbb-dev \
@@ -34,6 +34,15 @@ RUN apt-get update && apt-get install -y \
     libeigen3-dev \
     zlib1g-dev \
  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /
+RUN wget --no-check-certificate --max-redirect 3 https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/${BOOST_VERSION_DIR}.tar.gz
+RUN tar zxf ${BOOST_VERSION_DIR}.tar.gz && \
+    rm ${BOOST_VERSION_DIR}.tar.gz && \
+    cd ${BOOST_VERSION_DIR} && \
+    ./bootstrap.sh && \
+    ./b2 --prefix=/usr/local/ -j${CMAKE_THREADS} link=shared runtime-link=shared install && \
+    cd .. && rm -rf ${BOOST_VERSION_DIR} && ldconfig
 
 WORKDIR /
 RUN wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.xz && \
@@ -110,7 +119,18 @@ RUN sed -i -e 's/libavformat\.a/libavformat.so/g' \
         ../cmake/OpenCVDetectCUDA.cmake && \
     ## -- end of cuda fix
     ## help finding cuda libs
-    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH && ldconfig && \
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH && \
+    ln -s /usr/local/cuda/lib64/libnppial.so /usr/local/lib/libopencv_dep_nppial.so && \
+    ln -s /usr/local/cuda/lib64/libnppicc.so /usr/local/lib/libopencv_dep_nppicc.so && \
+    ln -s /usr/local/cuda/lib64/libnppicom.so /usr/local/lib/libopencv_dep_nppicom.so && \
+    ln -s /usr/local/cuda/lib64/libnppidei.so /usr/local/lib/libopencv_dep_nppidei.so && \
+    ln -s /usr/local/cuda/lib64/libnppif.so /usr/local/lib/libopencv_dep_nppif.so && \
+    ln -s /usr/local/cuda/lib64/libnppig.so /usr/local/lib/libopencv_dep_nppig.so && \
+    ln -s /usr/local/cuda/lib64/libnppim.so /usr/local/lib/libopencv_dep_nppim.so && \
+    ln -s /usr/local/cuda/lib64/libnppist.so /usr/local/lib/libopencv_dep_nppist.so && \
+    ln -s /usr/local/cuda/lib64/libnppisu.so /usr/local/lib/libopencv_dep_nppisu.so && \
+    ln -s /usr/local/cuda/lib64/libnppitc.so /usr/local/lib/libopencv_dep_nppitc.so && \
+    ldconfig && \
     ## build opencv
     cmake \
         -D CMAKE_BUILD_TYPE=RELEASE \
