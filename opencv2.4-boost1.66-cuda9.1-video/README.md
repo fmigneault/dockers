@@ -8,3 +8,5 @@ Docker image setup for image and video processing with OpenCV and CUDA.
 - OpenCV 2.4.13.7
 - FFmpeg 3.3
 - Boost 1.66
+- CMake 3.5.1
+- GCC 5.4.0
